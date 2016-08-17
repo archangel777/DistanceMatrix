@@ -72,6 +72,7 @@ public class Graph {
 		}
 	}
 	
+	//Loads the source file and reconstruct the path based on the nodes fathers.
 	public List<Long> getShortestPath(Long source, Long target) {
 		List<Long> path = new ArrayList<>();
 		DistanceVector vector = FileHandler.load(source, this.getNumberOfNodes());

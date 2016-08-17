@@ -4,6 +4,8 @@ import java.io.PrintWriter;
 import java.util.Scanner;
 
 public class FileHandler {
+	//Saves the list of "fathers" of each node, related to the shortest path with a given source node Id.
+	//The name of the file is the source node Id.
 	public static void save(Long sourceId, Integer size, DistanceVector vector) {
 		File dir = new File("vectors");
 		dir.mkdirs();
@@ -24,6 +26,8 @@ public class FileHandler {
 		}
 	}
 	
+	//Reads the "source" file and returns the Distance Vector (Only "father" Id is fetched as distance would at least
+	//double the amount of space written in disk.
 	public static DistanceVector load(Long sourceId, Integer size) {
 		File dir = new File("vectors");
 		dir.mkdirs();

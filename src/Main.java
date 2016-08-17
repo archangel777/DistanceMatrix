@@ -24,13 +24,18 @@ public class Main {
 	}
 	
 	public static void main(String[] args) {
+		//Choose a graph to run the application.
 		//Graph g = TableParserUtils.getBeijingGraph();
-		Graph g = TableParserUtils.getSmallTestGraph();
+		//Graph g = TableParserUtils.getSmallTestGraph();
 		//Graph g = TableParserUtils.getMediumTestGraph();
+		Graph g = TableParserUtils.getYuriGraph();
 		
-		long startTime = System.currentTimeMillis();	
+		long startTime = System.currentTimeMillis();
+		
+		//This creates the distance table in disk (run before asking for the shortest path)
 		//loadSystem(g);
-		printPath(g.getShortestPath(4l, 3l));
+		
+		printPath(g.getShortestPath(2l, 6l));
 		
 		System.out.println("Processing finished after " + (System.currentTimeMillis() - startTime) + " ms!");
 	}

@@ -6,6 +6,26 @@ import java.io.IOException;
 
 public class TableParserUtils {
 	
+	public static Graph getYuriGraph() {
+		Graph g = new Graph();
+		g.addNode(new Node(1l));
+		g.addNode(new Node(2l));
+		g.addNode(new Node(3l));
+		g.addNode(new Node(4l));
+		g.addNode(new Node(5l));
+		g.addNode(new Node(6l));
+		g.addNode(new Node(7l));
+		g.addEdge(new Edge(1l, 1l, 2l, 6.));
+		g.addEdge(new Edge(2l, 2l, 3l, 2.));
+		g.addEdge(new Edge(3l, 1l, 6l, 3.));
+		g.addEdge(new Edge(4l, 2l, 4l, 7.));
+		g.addEdge(new Edge(5l, 2l, 7l, 12.));
+		g.addEdge(new Edge(6l, 4l, 5l, 11.));
+		g.addEdge(new Edge(7l, 5l, 7l, 3.));
+		g.addEdge(new Edge(8l, 4l, 6l, 15.));
+		return g;
+	}
+	
 	public static Graph getSmallTestGraph() {
 		Graph g = new Graph();
 		g.addNode(new Node(1l));
