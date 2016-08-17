@@ -24,15 +24,24 @@ public class FileHandler {
 		}
 	}
 	
-	public static DistanceVector load(Long sourceId) {
+	public static DistanceVector load(Long sourceId, Integer size) {
 		File dir = new File("vectors");
 		dir.mkdirs();
-		File newFile = new File(dir, sourceId + ".txt");
+		File file = new File(dir, sourceId + ".txt");
+		DistanceVector vector = new DistanceVector();
 		try {
-			Scanner scanner = new Scanner(newFile);
+			Scanner s = new Scanner(file);
+			String aux;
+			for (Long i = 1l; i<=size; i++) {
+				DistanceElement element = new DistanceElement(i);
+				if (!(aux = s.next()).equals("null")) element.changePrevious(Long.valueOf(aux));
+				vector.addElement(element);
+			}
+			s.close();
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		return vector;
 	}
 }

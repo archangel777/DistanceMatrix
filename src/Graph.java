@@ -72,4 +72,16 @@ public class Graph {
 		}
 	}
 	
+	public List<Long> getShortestPath(Long source, Long target) {
+		List<Long> path = new ArrayList<>();
+		DistanceVector vector = FileHandler.load(source, this.getNumberOfNodes());
+		DistanceElement element = vector.getElement(target);
+		do {
+			path.add(0, element.getId());
+		} while (element.getPreviousId() != null && (element = vector.getElement(element.getPreviousId())).getId() != source);
+		if (element.getId() != source) return null;
+		path.add(0, source);
+		return path;
+	}
+	
 }
