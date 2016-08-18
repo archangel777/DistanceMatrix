@@ -1,9 +1,10 @@
 
-import java.text.DecimalFormat;
 import java.util.List;
+import java.util.Random;
 
 public class Main {
 	public static void printPath(List<Long> path) {
+		
 		if (path == null) {
 			System.out.println("There's no path between them!");
 		}
@@ -15,28 +16,21 @@ public class Main {
 		}
 	}
 	
-	public static void loadSystem(Graph g) {
-		DecimalFormat numberFormat = new DecimalFormat("#.00");
-		for(long i = 1; i<=g.getNumberOfNodes(); i++) {
-			FileHandler.save(i, g.getNumberOfNodes(), g.runDijkstra(g.getNode(i)));
-			if (i%10 == 0) System.out.println(numberFormat.format(i*100./g.getNumberOfNodes()) + "%");
-		}
-	}
-	
 	public static void main(String[] args) {
 		//Choose a graph to run the application.
 		//Graph g = TableParserUtils.getBeijingGraph();
 		//Graph g = TableParserUtils.getSmallTestGraph();
-		Graph g = TableParserUtils.getMediumTestGraph();
-		//Graph g = TableParserUtils.getYuriGraph();
-		
-		long startTime = System.currentTimeMillis();
+		//Graph g = TableParserUtils.getMediumTestGraph();
+		Graph g = TableParserUtils.getYuriGraph();
 		
 		//This creates the distance table in disk (run before asking for the shortest path)
-		//loadSystem(g);
+		//FileHandler.loadSystem(g);
 		
-		printPath(g.getShortestPath(1l, 12l));
+		Random r = new Random();
+		Long l1 = Math.abs(r.nextLong()%g.getNumberOfNodes())+1, l2 = Math.abs(r.nextLong()%g.getNumberOfNodes())+1;
+		System.out.println(l1 + " to " + l2);
+		printPath(g.getShortestPath(l1, l2));
 		
-		System.out.println("Processing finished after " + (System.currentTimeMillis() - startTime) + " ms!");
+		
 	}
 }

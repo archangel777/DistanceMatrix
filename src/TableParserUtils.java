@@ -111,6 +111,7 @@ public class TableParserUtils {
 				Node node = new Node(i);
 				graph.addNode(node);
 			}
+			reader.close();
 			
 			reader = new CSVReader(new FileReader(fileName));
 			
@@ -122,6 +123,7 @@ public class TableParserUtils {
 				
 				graph.addEdge(new Edge(Long.valueOf(line[0]), fromNodeId, toNodeId, Double.valueOf(line[3])));
 			}
+			reader.close();
 						
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();

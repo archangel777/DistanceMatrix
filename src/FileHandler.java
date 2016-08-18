@@ -1,6 +1,9 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class FileHandler {
@@ -47,5 +50,33 @@ public class FileHandler {
 			e.printStackTrace();
 		}
 		return vector;
+	}
+	
+	public static void loadSystem(final Graph g) {
+		
+		List<Runnable> list = new ArrayList<>();
+		int nThreads = 3;
+		for (int i = 1; i<=nThreads; i++) {
+			addRunnableToList(g, list, i, nThreads);
+		}
+		
+		for (Runnable r: list) {
+			new Thread(r).start();
+		}
+	}
+	
+	public static void addRunnableToList(final Graph g, List<Runnable> list, final int pos, final int total) {
+		list.add(new Runnable() {
+			
+			@Override
+			public void run() {
+				long startTime = System.currentTimeMillis();
+				for(long i = pos; i<=g.getNumberOfNodes(); i+=total) {
+					FileHandler.save(i, g.getNumberOfNodes(), g.runDijkstra(g.getNode(i)));
+					if (i%10 == 0) System.out.println(new DecimalFormat("#.00").format(i*100./2000) + "%");
+				}
+				System.out.println(pos + " thread processing finished after " + (System.currentTimeMillis() - startTime) + " ms!");
+			}
+		});
 	}
 }

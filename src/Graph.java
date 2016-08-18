@@ -46,11 +46,9 @@ public class Graph {
 			DistanceElement min = toVisit.remove();
 			if (min.isVisited()) continue;
 			min.setVisited(true);
-			//System.out.println("Base -> " + element.getDistance());
 			for (Edge e : nodes.get(min.getId()).getAdjacents()) {
 				DistanceElement neighbor = vector.getElement(e.getToNode());
 				Double newDistance = min.getDistance() + e.getCost();
-				//System.out.println("Neighbor -> " + newDistance);
 				if (neighbor.getDistance() > newDistance && !neighbor.isVisited()) {
 					neighbor.changeDistance(newDistance);
 					neighbor.changePrevious(min.getId());
@@ -65,7 +63,7 @@ public class Graph {
 	public void init(Node source, DistanceVector vector) {
 		for (Long i = 1l; i<=nodes.size(); i++) {
 			DistanceElement element = new DistanceElement(i);
-			if (element.getId() == source.getId()) {
+			if (element.getId().equals(source.getId())) {
 				element.changeDistance(0.);
 			}
 			vector.addElement(element);
@@ -74,14 +72,16 @@ public class Graph {
 	
 	//Loads the source file and reconstruct the path based on the nodes fathers.
 	public List<Long> getShortestPath(Long source, Long target) {
+		long startTime = System.currentTimeMillis();
 		List<Long> path = new ArrayList<>();
 		DistanceVector vector = FileHandler.load(source, this.getNumberOfNodes());
 		DistanceElement element = vector.getElement(target);
 		do {
 			path.add(0, element.getId());
-		} while (element.getPreviousId() != null && (element = vector.getElement(element.getPreviousId())).getId() != source);
-		if (element.getId() != source) return null;
+		} while (element.getPreviousId() != null && !(element = vector.getElement(element.getPreviousId())).getId().equals(source));
+		if (!element.getId().equals(source)) return null;
 		path.add(0, source);
+		System.out.println("Processing finished after " + (System.currentTimeMillis() - startTime) + " ms!");
 		return path;
 	}
 	
