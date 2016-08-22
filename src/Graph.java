@@ -41,7 +41,6 @@ public class Graph {
 		Queue<DistanceElement> toVisit = new PriorityQueue<>();
 		init(source, vector);
 		toVisit.add(vector.getElement(source.getId()));
-		
 		while (!toVisit.isEmpty()) {
 			DistanceElement min = toVisit.remove();
 			if (min.isVisited()) continue;
@@ -72,16 +71,19 @@ public class Graph {
 	
 	//Loads the source file and reconstruct the path based on the nodes fathers.
 	public List<Long> getShortestPath(Long source, Long target) {
-		long startTime = System.currentTimeMillis();
+		
 		List<Long> path = new ArrayList<>();
 		DistanceVector vector = FileHandler.load(source, this.getNumberOfNodes());
+		long startTime = System.currentTimeMillis();
 		DistanceElement element = vector.getElement(target);
-		do {
+		if (element.getPreviousId() == null) return null;
+		while (element.getPreviousId() != null) {
 			path.add(0, element.getId());
-		} while (element.getPreviousId() != null && !(element = vector.getElement(element.getPreviousId())).getId().equals(source));
-		if (!element.getId().equals(source)) return null;
+			element = vector.getElement(element.getPreviousId());
+		}
 		path.add(0, source);
-		System.out.println("Processing finished after " + (System.currentTimeMillis() - startTime) + " ms!");
+		System.out.println("Path construction finished after " + (System.currentTimeMillis() - startTime) + " ms!");
+		
 		return path;
 	}
 	
