@@ -22,4 +22,12 @@ public class Node {
 		return adjacents;
 	}
 	
+	public Double getCostToNode(Long id) {
+		for (Edge e: adjacents) {
+			if (id.equals(e.getToNode()))
+				return e.getCost();
+		}
+		return null;
+	}
+	
 }

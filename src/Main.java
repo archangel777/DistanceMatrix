@@ -20,7 +20,9 @@ public class Main {
 		Random r = new Random();
 		Long l1 = Math.abs(r.nextLong()%g.getNumberOfNodes())+1, l2 = Math.abs(r.nextLong()%g.getNumberOfNodes())+1;
 		System.out.println(l1 + " to " + l2);
-		printPath(g.getShortestPath(l1, l2));
+		List<Long> path = g.getShortestPath(l1, l2);
+		printPath(path);
+		if (path != null) System.out.println("The path's cost is " + g.getPathCost(path));
 	}
 	
 	public static void main(String[] args) {

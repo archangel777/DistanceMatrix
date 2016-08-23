@@ -87,4 +87,12 @@ public class Graph {
 		return path;
 	}
 	
+	public Double getPathCost(List<Long> path) {
+		Double cost = 0.;
+		for (int i = 1; i<path.size(); i++) {
+			cost += getNode(path.get(i-1)).getCostToNode(path.get(i));
+		}
+		return cost;
+	}
+	
 }
