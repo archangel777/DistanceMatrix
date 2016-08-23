@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Node {
+	
 	private Long id;
 	private List<Edge> adjacents;
 	

@@ -39,14 +39,19 @@ public class Graph {
 	public DistanceVector runDijkstra(Node source) {
 		DistanceVector vector = new DistanceVector();
 		Queue<DistanceElement> toVisit = new PriorityQueue<>();
+		
 		init(source, vector);
+		
 		toVisit.add(vector.getElement(source.getId()));
 		while (!toVisit.isEmpty()) {
 			DistanceElement min = toVisit.remove();
+			
 			if (min.isVisited()) continue;
 			min.setVisited(true);
+			
 			for (Edge e : nodes.get(min.getId()).getAdjacents()) {
 				DistanceElement neighbor = vector.getElement(e.getToNode());
+				
 				Double newDistance = min.getDistance() + e.getCost();
 				if (neighbor.getDistance() > newDistance && !neighbor.isVisited()) {
 					neighbor.changeDistance(newDistance);
@@ -71,17 +76,20 @@ public class Graph {
 	
 	//Loads the source file and reconstruct the path based on the nodes fathers.
 	public List<Long> getShortestPath(Long source, Long target) {
-		
 		List<Long> path = new ArrayList<>();
-		DistanceVector vector = FileHandler.load(source, this.getNumberOfNodes());
+		
 		long startTime = System.currentTimeMillis();
+		DistanceVector vector = FileHandler.load(source, this.getNumberOfNodes());
+		
 		DistanceElement element = vector.getElement(target);
 		if (element.getPreviousId() == null) return null;
+		
 		while (element.getPreviousId() != null) {
 			path.add(0, element.getId());
 			element = vector.getElement(element.getPreviousId());
 		}
 		path.add(0, source);
+		
 		System.out.println("Path construction finished after " + (System.currentTimeMillis() - startTime) + " ms!");
 		
 		return path;

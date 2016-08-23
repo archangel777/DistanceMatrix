@@ -80,15 +80,21 @@ public class FileHandler {
 			public void run() {
 				Double avgDijkstra = 0., avgSave = 0.;
 				long startTime = System.currentTimeMillis(), startDijkstra, startSave;
-				for(long i = pos; i<=g.getNumberOfNodes(); i+=total) {
+				int numberOfNodes = g.getNumberOfNodes(), progressNumber = numberOfNodes/500;
+				
+				for(long i = pos; i<=numberOfNodes; i+=total) {
+					
 					startDijkstra = System.currentTimeMillis();
 					DistanceVector vector = g.runDijkstra(g.getNode(i));
 					avgDijkstra = (avgDijkstra*(i-1)+(System.currentTimeMillis() - startDijkstra))/i;
+					
 					startSave = System.currentTimeMillis();
 					FileHandler.save(i, g.getNumberOfNodes(), vector);
 					avgSave = (avgSave*(i-1)+(System.currentTimeMillis() - startSave))/i;
-					if (i%10 == 0) System.out.println(new DecimalFormat("#.00").format(i*100./g.getNumberOfNodes()) + "%");
+					
+					if (i/progressNumber > (i-total)/progressNumber) System.out.println(new DecimalFormat("#.00").format(i*100./numberOfNodes) + "% - T" + pos);
 				}
+				
 				System.out.println("-------------------------------------------------------------------------------");
 				System.out.println(pos + " thread processing finished after " + getTimePretty(System.currentTimeMillis() - startTime));
 				System.out.println("Dijkstra took on average " + getTimePretty(avgDijkstra.longValue()));
