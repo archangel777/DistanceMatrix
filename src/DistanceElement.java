@@ -7,6 +7,7 @@ public class DistanceElement implements Comparable<DistanceElement>{
 	public DistanceElement(Long id) {
 		this.id = id;
 		this.distance = Double.POSITIVE_INFINITY;
+		previous = -1l;
 		visited = false;
 	}
 	

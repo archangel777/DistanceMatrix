@@ -6,27 +6,49 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import dataAccess.DataAccess;
+import dataAccess.MMapDataAccess;
+
 public class FileHandler {
 	
 	public static String getTimePretty(long milis) {
 		return (milis/60000) + " min, " + (milis%60000)/1000 + " seg e " + milis%1000 + " ms";
 	}
+	
 	//Saves the list of "fathers" of each node, related to the shortest path with a given source node Id.
 	//The name of the file is the source node Id.
 	public static void save(Long sourceId, Integer size, DistanceVector vector) {
-		File dir = new File("vectors/" + (sourceId/1000 + 1) + "/" + (sourceId/100 + 1));
-		dir.mkdirs();
+		String dirName = "vectors/" + (sourceId/1000 + 1) + "/" + (sourceId/100 + 1);
+		ensureDirectoryExists(dirName);
+		//useRawMethodForSaving(dir, sourceId, size, vector);
+		useMemoryMapForSaving(dirName, sourceId, size, vector);
+	}
+	
+	public static void useMemoryMapForSaving(String dirName, Long sourceId, Integer size, DistanceVector vector) {
+		int fileSize = 1024*256;
+		DataAccess dataAccess = new MMapDataAccess(dirName + "/" + sourceId + ".txt", fileSize);
+		dataAccess.ensureCapacity(fileSize);
+		for (long i = 0l; i<size; i++) {
+			long l = vector.getElement(i+1).getPreviousId();
+			dataAccess.setLong(i, l);
+		}
+		dataAccess.close();
+	}
+	
+	public static void useRawMethodForSaving(File dir, Long sourceId, Integer size, DistanceVector vector) {
 		File newFile = new File(dir, sourceId + ".txt");
 		try {
 			PrintWriter writer = new PrintWriter(newFile);
-			for (long i = 1l; i<size; i++) {
-				DistanceElement element = vector.getElement(i);
+			DistanceElement element;
+			for (long i = 1l; i<=size; i++) {
+				element = vector.getElement(i);
 				writer.print(element.getPreviousId() + "\n");
 			}
-			DistanceElement element = vector.getElement(size.longValue());
+			element = vector.getElement(size.longValue());
 			writer.print(element.getPreviousId());
 			writer.flush();
 			writer.close();
+			
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -37,19 +59,37 @@ public class FileHandler {
 	//double the amount of space written in disk.
 	public static DistanceVector load(Long sourceId, Integer size) {
 		long startTime = System.currentTimeMillis();
-		File dir = new File("vectors/" + (sourceId/1000 + 1) + "/" + (sourceId/100 + 1));
-		dir.mkdirs();
+		String dirName = "vectors/" + (sourceId/1000 + 1) + "/" + (sourceId/100 + 1);
+		ensureDirectoryExists(dirName);
+		System.out.println("Everything took " + (System.currentTimeMillis() - startTime) + " ms!");
+		//return useRawMethodForLoading(dir, sourceId, size);
+		return useMemoryMapForLoading(dirName, sourceId, size);
+	}
+	
+	public static DistanceVector useMemoryMapForLoading (String dirName, Long sourceId, Integer size) {
+		int fileSize = 1024*256;
+		DataAccess dataAccess = new MMapDataAccess(dirName + "/" + sourceId + ".txt", fileSize);
+		dataAccess.ensureCapacity(fileSize);
+
+		DistanceVector vector = new DistanceVector();
+		for (long i = 0l; i<size; i++) {
+			DistanceElement element = new DistanceElement(i+1);
+			long l = dataAccess.getLong(i);
+			element.changePrevious(l);
+			vector.addElement(element);
+		}
+		dataAccess.close();
+		return vector;
+	}
+	
+	public static DistanceVector useRawMethodForLoading (File dir, Long sourceId, Integer size) {
 		File file = new File(dir, sourceId + ".txt");
-		System.out.println("File location finished after " + (System.currentTimeMillis() - startTime) + " ms!");
 		DistanceVector vector = new DistanceVector();
 		try {
-			startTime = System.currentTimeMillis();
 			Scanner s = new Scanner(file);
-			System.out.println("Scanner setup finished after " + (System.currentTimeMillis() - startTime) + " ms!");
-			String aux;
 			for (Long i = 1l; i<=size; i++) {
 				DistanceElement element = new DistanceElement(i);
-				if (!(aux = s.next()).equals("null")) element.changePrevious(Long.valueOf(aux));
+				element.changePrevious(Long.valueOf(s.next()));
 				vector.addElement(element);
 			}
 			s.close();
@@ -58,6 +98,11 @@ public class FileHandler {
 			e.printStackTrace();
 		}
 		return vector;
+	}
+	
+	public static void ensureDirectoryExists(String dirName) {
+		File dir = new File(dirName);
+		dir.mkdirs();
 	}
 	
 	public static void loadSystem(final Graph g) {

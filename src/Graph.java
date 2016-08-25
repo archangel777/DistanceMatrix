@@ -83,7 +83,7 @@ public class Graph {
 		
 		DistanceElement element = vector.getElement(target);
 		if (element.getPreviousId() == null) return null;
-		
+		System.out.println(element.getPreviousId());
 		while (element.getPreviousId() != null) {
 			path.add(0, element.getId());
 			element = vector.getElement(element.getPreviousId());
