@@ -12,8 +12,8 @@ import dataAccess.MMapDataAccess;
 
 public class FileHandler {
 	
-	private static long totalSize = 1024*256;
-	private static int segmentSize = 1024*64;
+	private static long totalSize = 1024*317;
+	private static int segmentSize = 1024;
 	
 	public static String getTimePretty(long milis) {
 		return (milis/60000) + " min, " + (milis%60000)/1000 + " seg e " + milis%1000 + " ms";
@@ -34,7 +34,7 @@ public class FileHandler {
 		dataAccess.ensureCapacity(totalSize);
 		for (long i = 1; i<=size; i++) {
 			long l = vector.getElement(i).getPreviousId();
-			dataAccess.setLong(i-1, l);
+			dataAccess.setLong(l);
 		}
 		dataAccess.close();
 	}
@@ -72,7 +72,8 @@ public class FileHandler {
 		long startTime = System.currentTimeMillis();
 		DataAccess dataAccess = new MMapDataAccess(dirName + "/" + sourceId + ".mmap", segmentSize);
 		dataAccess.ensureCapacity(totalSize);
-
+		dataAccess.setCurrentPosition(0);
+		System.out.println(size);
 		DistanceVector vector = new DistanceVector();
 		for (long i = 1; i<=size; i++) {
 			DistanceElement element = new DistanceElement(i);
