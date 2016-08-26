@@ -82,9 +82,9 @@ public class Graph {
 		DistanceVector vector = FileHandler.load(source, this.getNumberOfNodes());
 		
 		DistanceElement element = vector.getElement(target);
-		if (element.getPreviousId() == null) return null;
-		System.out.println(element.getPreviousId());
-		while (element.getPreviousId() != null) {
+		if (element.getPreviousId().longValue() == -1) return null;
+		System.out.println(element.getPreviousId().longValue());
+		while (element.getPreviousId().longValue() != -1) {
 			path.add(0, element.getId());
 			element = vector.getElement(element.getPreviousId());
 		}

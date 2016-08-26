@@ -7,9 +7,13 @@ import java.util.List;
 import java.util.Scanner;
 
 import dataAccess.DataAccess;
+import dataAccess.FileUtils;
 import dataAccess.MMapDataAccess;
 
 public class FileHandler {
+	
+	private static long totalSize = 1024*256;
+	private static int segmentSize = 1024*64;
 	
 	public static String getTimePretty(long milis) {
 		return (milis/60000) + " min, " + (milis%60000)/1000 + " seg e " + milis%1000 + " ms";
@@ -25,12 +29,12 @@ public class FileHandler {
 	}
 	
 	public static void useMemoryMapForSaving(String dirName, Long sourceId, Integer size, DistanceVector vector) {
-		int fileSize = 1024*256;
-		DataAccess dataAccess = new MMapDataAccess(dirName + "/" + sourceId + ".txt", fileSize);
-		dataAccess.ensureCapacity(fileSize);
-		for (long i = 0l; i<size; i++) {
-			long l = vector.getElement(i+1).getPreviousId();
-			dataAccess.setLong(i, l);
+		FileUtils.delete(dirName + "/" + sourceId + ".mmap");
+		DataAccess dataAccess = new MMapDataAccess(dirName + "/" + sourceId + ".mmap", segmentSize);
+		dataAccess.ensureCapacity(totalSize);
+		for (long i = 1; i<=size; i++) {
+			long l = vector.getElement(i).getPreviousId();
+			dataAccess.setLong(i-1, l);
 		}
 		dataAccess.close();
 	}
@@ -40,7 +44,7 @@ public class FileHandler {
 		try {
 			PrintWriter writer = new PrintWriter(newFile);
 			DistanceElement element;
-			for (long i = 1l; i<=size; i++) {
+			for (Long i = 1l; i<=size; i++) {
 				element = vector.getElement(i);
 				writer.print(element.getPreviousId() + "\n");
 			}
@@ -58,27 +62,26 @@ public class FileHandler {
 	//Reads the "source" file and returns the Distance Vector (Only "father" Id is fetched as distance would at least
 	//double the amount of space written in disk.
 	public static DistanceVector load(Long sourceId, Integer size) {
-		long startTime = System.currentTimeMillis();
 		String dirName = "vectors/" + (sourceId/1000 + 1) + "/" + (sourceId/100 + 1);
 		ensureDirectoryExists(dirName);
-		System.out.println("Everything took " + (System.currentTimeMillis() - startTime) + " ms!");
 		//return useRawMethodForLoading(dir, sourceId, size);
 		return useMemoryMapForLoading(dirName, sourceId, size);
 	}
 	
 	public static DistanceVector useMemoryMapForLoading (String dirName, Long sourceId, Integer size) {
-		int fileSize = 1024*256;
-		DataAccess dataAccess = new MMapDataAccess(dirName + "/" + sourceId + ".txt", fileSize);
-		dataAccess.ensureCapacity(fileSize);
+		long startTime = System.currentTimeMillis();
+		DataAccess dataAccess = new MMapDataAccess(dirName + "/" + sourceId + ".mmap", segmentSize);
+		dataAccess.ensureCapacity(totalSize);
 
 		DistanceVector vector = new DistanceVector();
-		for (long i = 0l; i<size; i++) {
-			DistanceElement element = new DistanceElement(i+1);
-			long l = dataAccess.getLong(i);
+		for (long i = 1; i<=size; i++) {
+			DistanceElement element = new DistanceElement(i);
+			long l = dataAccess.getLong();
 			element.changePrevious(l);
 			vector.addElement(element);
 		}
 		dataAccess.close();
+		System.out.println("Loading took " + (System.currentTimeMillis() - startTime) + " ms!");
 		return vector;
 	}
 	
@@ -125,7 +128,7 @@ public class FileHandler {
 			public void run() {
 				Double avgDijkstra = 0., avgSave = 0.;
 				long startTime = System.currentTimeMillis(), startDijkstra, startSave;
-				int numberOfNodes = g.getNumberOfNodes(), progressNumber = numberOfNodes/500;
+				int numberOfNodes = g.getNumberOfNodes(), progressNumber = Math.max(1, numberOfNodes/500);
 				
 				for(long i = pos; i<=numberOfNodes; i+=total) {
 					
