@@ -6,38 +6,37 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-import dataAccess.DataAccess;
-import dataAccess.FileUtils;
-import dataAccess.MMapDataAccess;
+import hugedataaccess.DataAccess;
+import hugedataaccess.util.FileUtils;
+import hugedataaccess.MMapDataAccess;
 
 public class FileHandler {
 	
-	private static long totalSize = 1024*317;
-	private static int segmentSize = 1024;
+	public static String fileName = "matrix.mmap";
+	public static int segmentSize = 1024*1024;
+	private static int openThreads = 0;
 	
 	public static String getTimePretty(long milis) {
 		return (milis/60000) + " min, " + (milis%60000)/1000 + " seg e " + milis%1000 + " ms";
 	}
 	
-	//Saves the list of "fathers" of each node, related to the shortest path with a given source node Id.
-	//The name of the file is the source node Id.
-	public static void save(Long sourceId, Integer size, DistanceVector vector) {
-		String dirName = "vectors/" + (sourceId/1000 + 1) + "/" + (sourceId/100 + 1);
-		ensureDirectoryExists(dirName);
-		//useRawMethodForSaving(dir, sourceId, size, vector);
-		useMemoryMapForSaving(dirName, sourceId, size, vector);
+	public static long getTotalSize(int numberOfNodes) {
+		return (long) Math.ceil((numberOfNodes*numberOfNodes*8d)/(1024*1024))*1024*1024;
 	}
 	
-	public static void useMemoryMapForSaving(String dirName, Long sourceId, Integer size, DistanceVector vector) {
-		FileUtils.delete(dirName + "/" + sourceId + ".mmap");
-		DataAccess dataAccess = new MMapDataAccess(dirName + "/" + sourceId + ".mmap", segmentSize);
-		dataAccess.ensureCapacity(totalSize);
+	//Saves the list of "fathers" of each node, related to the shortest path with a given source node Id.
+	//The name of the file is the source node Id.
+	public static void save(Long sourceId, Integer size, DistanceVector vector, DataAccess dataAccess) {
+		//useRawMethodForSaving(dir, sourceId, size, vector);
+		useMemoryMapForSaving(sourceId, size, vector, dataAccess);
+	}
+	
+	public static void useMemoryMapForSaving(Long sourceId, Integer size, DistanceVector vector, DataAccess dataAccess) {
 		for (long i = 1; i<=size; i++) {
 			long l = vector.getElement(i).getPreviousId();
-			dataAccess.setLong(l);
+			dataAccess.setLong(((sourceId-1)*size + i - 1)*8, l);
 		}
-		dataAccess.close();
-	}
+	} 
 	
 	public static void useRawMethodForSaving(File dir, Long sourceId, Integer size, DistanceVector vector) {
 		File newFile = new File(dir, sourceId + ".txt");
@@ -61,27 +60,22 @@ public class FileHandler {
 	
 	//Reads the "source" file and returns the Distance Vector (Only "father" Id is fetched as distance would at least
 	//double the amount of space written in disk.
-	public static DistanceVector load(Long sourceId, Integer size) {
-		String dirName = "vectors/" + (sourceId/1000 + 1) + "/" + (sourceId/100 + 1);
-		ensureDirectoryExists(dirName);
+	public static DistanceVector load(Long sourceId, Integer size, DataAccess dataAccess) {
 		//return useRawMethodForLoading(dir, sourceId, size);
-		return useMemoryMapForLoading(dirName, sourceId, size);
+		return useMemoryMapForLoading(sourceId, size, dataAccess);
 	}
 	
-	public static DistanceVector useMemoryMapForLoading (String dirName, Long sourceId, Integer size) {
+	public static DistanceVector useMemoryMapForLoading (Long sourceId, Integer size, DataAccess dataAccess) {
 		long startTime = System.currentTimeMillis();
-		DataAccess dataAccess = new MMapDataAccess(dirName + "/" + sourceId + ".mmap", segmentSize);
-		dataAccess.ensureCapacity(totalSize);
-		dataAccess.setCurrentPosition(0);
+		
 		System.out.println(size);
 		DistanceVector vector = new DistanceVector();
 		for (long i = 1; i<=size; i++) {
 			DistanceElement element = new DistanceElement(i);
-			long l = dataAccess.getLong();
+			long l = dataAccess.getLong(((sourceId-1)*size + i - 1)*8);
 			element.changePrevious(l);
 			vector.addElement(element);
 		}
-		dataAccess.close();
 		System.out.println("Loading took " + (System.currentTimeMillis() - startTime) + " ms!");
 		return vector;
 	}
@@ -110,11 +104,13 @@ public class FileHandler {
 	}
 	
 	public static void loadSystem(final Graph g) {
-		
-		List<Runnable> list = new ArrayList<>();
+		FileUtils.delete(fileName);
+		DataAccess dataAccess = new MMapDataAccess(fileName, getTotalSize(g.getNumberOfNodes()), segmentSize);
+		List<Runnable> list = new ArrayList<>();	
 		int nThreads = 4;
 		for (int i = 1; i<=nThreads; i++) {
-			addRunnableToList(g, list, i, nThreads);
+			addRunnableToList(g, list, i, nThreads, dataAccess);
+			openThreads++;
 		}
 		
 		for (Runnable r: list) {
@@ -122,7 +118,7 @@ public class FileHandler {
 		}
 	}
 	
-	public static void addRunnableToList(final Graph g, List<Runnable> list, final int pos, final int total) {
+	public static void addRunnableToList(final Graph g, List<Runnable> list, final int pos, final int total, final DataAccess dataAccess) {
 		list.add(new Runnable() {
 			
 			@Override
@@ -138,7 +134,7 @@ public class FileHandler {
 					avgDijkstra = (avgDijkstra*(i-1)+(System.currentTimeMillis() - startDijkstra))/i;
 					
 					startSave = System.currentTimeMillis();
-					FileHandler.save(i, g.getNumberOfNodes(), vector);
+					FileHandler.save(i, g.getNumberOfNodes(), vector, dataAccess);
 					avgSave = (avgSave*(i-1)+(System.currentTimeMillis() - startSave))/i;
 					
 					if (i/progressNumber > (i-total)/progressNumber) System.out.println(new DecimalFormat("#.00").format(i*100./numberOfNodes) + "% - T" + pos);
@@ -149,6 +145,8 @@ public class FileHandler {
 				System.out.println("Dijkstra took on average " + getTimePretty(avgDijkstra.longValue()));
 				System.out.println("Saving in disk took on average " + getTimePretty(avgSave.longValue()));
 				System.out.println("-------------------------------------------------------------------------------");
+				openThreads--;
+				if (openThreads == 0) dataAccess.close();
 			}
 		});
 	}

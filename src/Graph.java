@@ -5,6 +5,9 @@ import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
+import hugedataaccess.DataAccess;
+import hugedataaccess.MMapDataAccess;
+
 public class Graph {
 	
 	private Map<Long, Node> nodes;
@@ -79,7 +82,8 @@ public class Graph {
 		List<Long> path = new ArrayList<>();
 		
 		long startTime = System.currentTimeMillis();
-		DistanceVector vector = FileHandler.load(source, this.getNumberOfNodes());
+		DataAccess dataAccess = new MMapDataAccess(FileHandler.fileName, FileHandler.getTotalSize(getNumberOfNodes()), FileHandler.segmentSize);
+		DistanceVector vector = FileHandler.load(source, this.getNumberOfNodes(), dataAccess);
 		
 		DistanceElement element = vector.getElement(target);
 		if (element.getPreviousId().longValue() == -1) return null;

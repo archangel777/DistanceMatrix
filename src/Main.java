@@ -23,6 +23,7 @@ public class Main {
 		printPath(path);
 		
 		if (path != null) System.out.println("The path's cost is " + g.getPathCost(path));
+		path = null;
 	}
 	
 	public static void main(String[] args) {
@@ -36,6 +37,6 @@ public class Main {
 		//FileHandler.loadSystem(g);
 		
 		printRandomPath(g);
-		
+		g = null;
 	}
 }
