@@ -23,9 +23,9 @@ public class Node {
 		return adjacents;
 	}
 	
-	public Double getCostToNode(long id) {
+	public Double getCostToNode(Long id) {
 		for (Edge e: adjacents) {
-			if (id == e.getToNode()) {
+			if (id.equals(e.getToNode())) {
 				return e.getCost();
 			}
 		}

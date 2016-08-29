@@ -1,8 +1,8 @@
 
 public class Edge {
 	
-	private long id;
-	private long fromNode, toNode;
+	private Long id;
+	private Long fromNode, toNode;
 	private Double cost;
 	
 	public Edge(Long edgeId, Long from, Long to, Double cost) {
