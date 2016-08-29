@@ -67,7 +67,7 @@ public class Graph {
 	public void init(Node source, DistanceVector vector) {
 		for (Long i = 1l; i<=nodes.size(); i++) {
 			DistanceElement element = new DistanceElement(i);
-			if (element.getId().equals(source.getId())) {
+			if (element.getId() == source.getId()) {
 				element.changeDistance(0.);
 			}
 			vector.addElement(element);
@@ -82,9 +82,9 @@ public class Graph {
 		DistanceVector vector = FileHandler.load(source, this.getNumberOfNodes());
 		
 		DistanceElement element = vector.getElement(target);
-		if (element.getPreviousId().longValue() == -1) return null;
-		System.out.println(element.getPreviousId().longValue());
-		while (element.getPreviousId().longValue() != -1) {
+		if (element.getPreviousId() == -1) return null;
+
+		while (element.getPreviousId() != -1) {
 			path.add(0, element.getId());
 			element = vector.getElement(element.getPreviousId());
 		}
@@ -98,6 +98,7 @@ public class Graph {
 	public Double getPathCost(List<Long> path) {
 		Double cost = 0.;
 		for (int i = 1; i<path.size(); i++) {
+			System.out.println(getNode(path.get(i-1)).getCostToNode(path.get(i)));
 			cost += getNode(path.get(i-1)).getCostToNode(path.get(i));
 		}
 		return cost;

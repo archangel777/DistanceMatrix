@@ -1,17 +1,17 @@
 
 public class DistanceElement implements Comparable<DistanceElement>{
-	private Long id, previous;
+	private long id, previous;
 	private Double distance;
 	private boolean visited;
 	
 	public DistanceElement(Long id) {
 		this.id = id;
 		this.distance = Double.POSITIVE_INFINITY;
-		previous = -1l;
+		previous = -1;
 		visited = false;
 	}
 	
-	public void changePrevious(Long newPrevious) {
+	public void changePrevious(long newPrevious) {
 		previous = newPrevious;
 	}
 	
@@ -19,7 +19,7 @@ public class DistanceElement implements Comparable<DistanceElement>{
 		distance = newDistance;
 	}
 	
-	public Long getId() {
+	public long getId() {
 		return id;
 	}
 	
@@ -27,7 +27,7 @@ public class DistanceElement implements Comparable<DistanceElement>{
 		return distance;
 	}
 	
-	public Long getPreviousId() {
+	public long getPreviousId() {
 		return previous;
 	}
 	

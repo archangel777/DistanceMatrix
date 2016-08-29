@@ -1,8 +1,8 @@
 
 public class Edge {
 	
-	private Long id;
-	private Long fromNode, toNode;
+	private long id;
+	private long fromNode, toNode;
 	private Double cost;
 	
 	public Edge(Long edgeId, Long from, Long to, Double cost) {
@@ -12,7 +12,7 @@ public class Edge {
 		this.cost = cost;
 	}
 	
-	public Long getId() {
+	public long getId() {
 		return id;
 	}
 	
@@ -20,11 +20,11 @@ public class Edge {
 		return cost;
 	}
 	
-	public Long getFromNode() {
+	public long getFromNode() {
 		return fromNode;
 	}
 	
-	public Long getToNode() {
+	public long getToNode() {
 		return toNode;
 	}
 }
