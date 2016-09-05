@@ -9,7 +9,7 @@ import hugedataaccess.util.*;
 public class FileHandler {
 	
 	private static int segmentSize = 1024*1024;
-	private static int nThreads = 2;
+	private static int nThreads = 4;
 	private static String dirName = "data";
 	
 	public static String getTimePretty(long milis) {
@@ -25,14 +25,14 @@ public class FileHandler {
 	public static void save(Long sourceId, Integer size, DistanceVector vector, DataAccess dataAccess) {
 		for (long i = 1; i<=size; i++) {
 			long l = vector.getElement(i).getPreviousId();
-			dataAccess.setLong(((sourceId-1)/nThreads * size + i - 1) * 8l, l);
+			dataAccess.setLong(getMMapPosition(sourceId, size, i), l);
 		}
 	}
 	
 	//Reads the "source" file and returns the Distance Vector (Only "father" Id is fetched as distance would at least
 	//double the amount of space written in disk.
 	public static List<Long> load(Long sourceId, Long target, Integer size) {
-		long startTime = System.currentTimeMillis();
+		
 		DataAccess dataAccess = new MMapDataAccess(dirName + "/" + ((sourceId-1)%nThreads+1) + ".mmap", getTotalSize(size), segmentSize);
 		
 		List<Long> path = new ArrayList<>();
@@ -46,7 +46,6 @@ public class FileHandler {
 		}
 		dataAccess.close();
 		
-		System.out.println("Loading took " + (System.currentTimeMillis() - startTime) + " ms!");
 		return path;
 	}
 	
@@ -73,12 +72,12 @@ public class FileHandler {
 				FileUtils.delete(dirName + "/" + ((pos-1)%nThreads+1) + ".mmap");
 				DataAccess dataAccess = new MMapDataAccess(dirName + "/" + ((pos-1)%nThreads+1) + ".mmap", getTotalSize(numberOfNodes), segmentSize);
 				
-				for(long i = pos; i<=numberOfNodes; i+=nThreads) {
+				for(long i = pos; i<=g.getNumberOfNodes(); i+=nThreads) {
 					DistanceVector vector = g.runDijkstra(g.getNode(i));
 
 					FileHandler.save(i, g.getNumberOfNodes(), vector, dataAccess);
 
-					printProgress(i, numberOfNodes, pos);
+					printProgress(i, g.getNumberOfNodes(), pos);
 				}
 				
 				System.out.println("-------------------------------------------------------------------------------");

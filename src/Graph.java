@@ -67,7 +67,7 @@ public class Graph {
 	public void init(Node source, DistanceVector vector) {
 		for (Long i = 1l; i<=nodes.size(); i++) {
 			DistanceElement element = new DistanceElement(i);
-			if (element.getId() == source.getId()) {
+			if (element.getId().equals(source.getId())) {
 				element.changeDistance(0.);
 			}
 			vector.addElement(element);

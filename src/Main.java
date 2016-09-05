@@ -17,25 +17,26 @@ public class Main {
 		Long l1 = Math.abs(r.nextLong()%g.getNumberOfNodes())+1, l2 = Math.abs(r.nextLong()%g.getNumberOfNodes())+1;
 		
 		System.out.println(l1 + " to " + l2);
-		
+		long startTime = System.currentTimeMillis();
 		List<Long> path = g.getShortestPath(l1, l2);
 		
 		printPath(path);
-		
 		if (path != null) System.out.println("The path's cost is " + g.getPathCost(path));
+		
+		System.out.println("Everything took " + (System.currentTimeMillis() - startTime) + " ms!");
 	}
 	
 	public static void main(String[] args) {
 		//Choose a graph to run the application.
-		//Graph g = TableParserUtils.getBeijingGraph();
+		Graph g = TableParserUtils.getBeijingGraph();
 		//Graph g = TableParserUtils.getSmallTestGraph();
-		Graph g = TableParserUtils.getMediumTestGraph();
+		//Graph g = TableParserUtils.getMediumTestGraph();
 		//Graph g = TableParserUtils.getYuriGraph();
 		
 		//This creates the distance table in disk (run before asking for the shortest path)
-		//FileHandler.loadSystem(g);
+		FileHandler.loadSystem(g);
 		
-		printRandomPath(g);
+		//printRandomPath(g);
 		
 	}
 }
