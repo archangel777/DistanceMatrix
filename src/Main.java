@@ -27,15 +27,15 @@ public class Main {
 	
 	public static void main(String[] args) {
 		//Choose a graph to run the application.
-		Graph g = TableParserUtils.getBeijingGraph();
+		//Graph g = TableParserUtils.getBeijingGraph();
 		//Graph g = TableParserUtils.getSmallTestGraph();
-		//Graph g = TableParserUtils.getMediumTestGraph();
+		Graph g = TableParserUtils.getMediumTestGraph();
 		//Graph g = TableParserUtils.getYuriGraph();
 		
 		//This creates the distance table in disk (run before asking for the shortest path)
-		FileHandler.loadSystem(g);
+		//FileHandler.loadSystem(g);
 		
-		//printRandomPath(g);
+		printRandomPath(g);
 		
 	}
 }

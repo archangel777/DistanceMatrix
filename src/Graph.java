@@ -75,24 +75,8 @@ public class Graph {
 	}
 	
 	//Loads the source file and reconstruct the path based on the nodes fathers.
-	public List<Long> getShortestPath(Long source, Long target) {
-		List<Long> path = new ArrayList<>();
-		
-		long startTime = System.currentTimeMillis();
-		DistanceVector vector = FileHandler.load(source, this.getNumberOfNodes());
-		
-		DistanceElement element = vector.getElement(target);
-		if (element.getPreviousId() == -1) return null;
-
-		while (element.getPreviousId() != -1) {
-			path.add(0, element.getId());
-			element = vector.getElement(element.getPreviousId());
-		}
-		path.add(0, source);
-		
-		System.out.println("Path construction finished after " + (System.currentTimeMillis() - startTime) + " ms!");
-		
-		return path;
+	public List<Long> getShortestPath(Long source, Long target) {		
+		return FileHandler.load(source, target, this.getNumberOfNodes());
 	}
 	
 	public Double getPathCost(List<Long> path) {

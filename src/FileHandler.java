@@ -31,20 +31,27 @@ public class FileHandler {
 	
 	//Reads the "source" file and returns the Distance Vector (Only "father" Id is fetched as distance would at least
 	//double the amount of space written in disk.
-	public static DistanceVector load(Long sourceId, Integer size) {
+	public static List<Long> load(Long sourceId, Long target, Integer size) {
 		long startTime = System.currentTimeMillis();
 		DataAccess dataAccess = new MMapDataAccess(dirName + "/" + ((sourceId-1)%nThreads+1) + ".mmap", getTotalSize(size), segmentSize);
 		
-		DistanceVector vector = new DistanceVector();
-		for (long i = 1; i<=size; i++) {
-			DistanceElement element = new DistanceElement(i);
-			long l = dataAccess.getLong(((sourceId-1)/nThreads * size + i - 1) * 8l);
-			element.changePrevious(l);
-			vector.addElement(element);
+		List<Long> path = new ArrayList<>();
+		long current = target.longValue();
+		path.add(new Long(current));
+		if ((current = dataAccess.getLong(getMMapPosition(sourceId, size, current))) == -1) return null;
+		
+		while (current != -1) {
+			path.add(0, new Long(current));
+			current = dataAccess.getLong(getMMapPosition(sourceId, size, current));
 		}
 		dataAccess.close();
+		
 		System.out.println("Loading took " + (System.currentTimeMillis() - startTime) + " ms!");
-		return vector;
+		return path;
+	}
+	
+	public static long getMMapPosition(Long sourceId, Integer size, long i) {
+		return ((sourceId-1)/nThreads * size + i - 1) * 8;
 	}
 	
 	public static void loadSystem(final Graph g) {
