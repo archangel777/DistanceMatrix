@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
+import java.util.Random;
 
 public class Graph {
 	
@@ -74,33 +75,22 @@ public class Graph {
 		}
 	}
 	
-	//Loads the source file and reconstruct the path based on the nodes fathers.
-	public List<Long> getShortestPath(Long source, Long target) {
+	public long getRandomNodeId() {
+		return Math.abs(new Random().nextLong()%this.getNumberOfNodes()) + 1;
+	}
+	
+	public List<Long> getRandomPath() {
 		List<Long> path = new ArrayList<>();
-		
-		long startTime = System.currentTimeMillis();
-		DistanceVector vector = FileHandler.load(source, this.getNumberOfNodes());
-		
-		DistanceElement element = vector.getElement(target);
-		if (element.getPreviousId().longValue() == -1) return null;
-		System.out.println(element.getPreviousId().longValue());
-		while (element.getPreviousId().longValue() != -1) {
-			path.add(0, element.getId());
-			element = vector.getElement(element.getPreviousId());
+		int counter = 0;
+		Long currentPoint = Math.abs(new Random().nextLong()%this.getNumberOfNodes()) + 1;
+		System.out.println(currentPoint);
+		path.add(currentPoint);
+		counter++;
+		while (counter <= 40 && !this.getNode(currentPoint).getAdjacents().isEmpty()) {
+			counter++;
+			currentPoint = this.getNode(currentPoint).getAdjacents().get(0).getToNode();
+			path.add(currentPoint);
 		}
-		path.add(0, source);
-		
-		System.out.println("Path construction finished after " + (System.currentTimeMillis() - startTime) + " ms!");
-		
 		return path;
 	}
-	
-	public Double getPathCost(List<Long> path) {
-		Double cost = 0.;
-		for (int i = 1; i<path.size(); i++) {
-			cost += getNode(path.get(i-1)).getCostToNode(path.get(i));
-		}
-		return cost;
-	}
-	
 }

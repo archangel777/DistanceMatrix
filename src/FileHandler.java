@@ -1,10 +1,7 @@
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 import dataAccess.DataAccess;
 import dataAccess.FileUtils;
@@ -18,90 +15,47 @@ public class FileHandler {
 	public static String getTimePretty(long milis) {
 		return (milis/60000) + " min, " + (milis%60000)/1000 + " seg e " + milis%1000 + " ms";
 	}
-	
-	//Saves the list of "fathers" of each node, related to the shortest path with a given source node Id.
-	//The name of the file is the source node Id.
+
 	public static void save(Long sourceId, Integer size, DistanceVector vector) {
 		String dirName = "vectors/" + (sourceId/1000 + 1) + "/" + (sourceId/100 + 1);
 		ensureDirectoryExists(dirName);
-		//useRawMethodForSaving(dir, sourceId, size, vector);
-		useMemoryMapForSaving(dirName, sourceId, size, vector);
-	}
-	
-	public static void useMemoryMapForSaving(String dirName, Long sourceId, Integer size, DistanceVector vector) {
 		FileUtils.delete(dirName + "/" + sourceId + ".mmap");
 		DataAccess dataAccess = new MMapDataAccess(dirName + "/" + sourceId + ".mmap", segmentSize);
 		dataAccess.ensureCapacity(totalSize);
 		for (long i = 1; i<=size; i++) {
-			long l = vector.getElement(i).getPreviousId();
-			dataAccess.setLong(l);
+			Double d = vector.getElement(i).getDistance();
+			if (d.equals(Double.POSITIVE_INFINITY)) d = -1.;
+			
+			dataAccess.setDouble(d.doubleValue());
 		}
 		dataAccess.close();
 	}
-	
-	public static void useRawMethodForSaving(File dir, Long sourceId, Integer size, DistanceVector vector) {
-		File newFile = new File(dir, sourceId + ".txt");
-		try {
-			PrintWriter writer = new PrintWriter(newFile);
-			DistanceElement element;
-			for (Long i = 1l; i<=size; i++) {
-				element = vector.getElement(i);
-				writer.print(element.getPreviousId() + "\n");
-			}
-			element = vector.getElement(size.longValue());
-			writer.print(element.getPreviousId());
-			writer.flush();
-			writer.close();
-			
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	
-	//Reads the "source" file and returns the Distance Vector (Only "father" Id is fetched as distance would at least
-	//double the amount of space written in disk.
-	public static DistanceVector load(Long sourceId, Integer size) {
-		String dirName = "vectors/" + (sourceId/1000 + 1) + "/" + (sourceId/100 + 1);
-		ensureDirectoryExists(dirName);
-		//return useRawMethodForLoading(dir, sourceId, size);
-		return useMemoryMapForLoading(dirName, sourceId, size);
-	}
-	
-	public static DistanceVector useMemoryMapForLoading (String dirName, Long sourceId, Integer size) {
+
+	public static double getPathCost(Long sourceId, Long targetId) {
 		long startTime = System.currentTimeMillis();
+		String dirName = "vectors/" + (sourceId/1000 + 1) + "/" + (sourceId/100 + 1);
 		DataAccess dataAccess = new MMapDataAccess(dirName + "/" + sourceId + ".mmap", segmentSize);
 		dataAccess.ensureCapacity(totalSize);
-		dataAccess.setCurrentPosition(0);
-		System.out.println(size);
-		DistanceVector vector = new DistanceVector();
-		for (long i = 1; i<=size; i++) {
-			DistanceElement element = new DistanceElement(i);
-			long l = dataAccess.getLong();
-			element.changePrevious(l);
-			vector.addElement(element);
-		}
+
+		double cost = dataAccess.getDouble((targetId.longValue()-1)*8);
+
 		dataAccess.close();
 		System.out.println("Loading took " + (System.currentTimeMillis() - startTime) + " ms!");
-		return vector;
+		return cost;
 	}
 	
-	public static DistanceVector useRawMethodForLoading (File dir, Long sourceId, Integer size) {
-		File file = new File(dir, sourceId + ".txt");
-		DistanceVector vector = new DistanceVector();
-		try {
-			Scanner s = new Scanner(file);
-			for (Long i = 1l; i<=size; i++) {
-				DistanceElement element = new DistanceElement(i);
-				element.changePrevious(Long.valueOf(s.next()));
-				vector.addElement(element);
-			}
-			s.close();
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+	public static List<Double> getListOfPathCosts(Long sourceId, Integer size) {
+		//long startTime = System.currentTimeMillis();
+		String dirName = "vectors/" + (sourceId/1000 + 1) + "/" + (sourceId/100 + 1);
+		DataAccess dataAccess = new MMapDataAccess(dirName + "/" + sourceId + ".mmap", segmentSize);
+		dataAccess.ensureCapacity(totalSize);
+		List<Double> costList = new ArrayList<>();
+		for (long i = 0; i<size; i++) {
+			costList.add(dataAccess.getDouble(i*8));
 		}
-		return vector;
+		dataAccess.close();
+		//System.out.println("Loading took " + (System.currentTimeMillis() - startTime) + " ms!");
+		return costList;
 	}
 	
 	public static void ensureDirectoryExists(String dirName) {
