@@ -6,10 +6,11 @@ import java.util.Random;
 
 public class Main {
 	
-	public static Map<Long, List<Double>> fetched = new HashMap<>();
+	public static Map<Long, List<Double>> fetched;
 	
 	public static void fetchToMemory(List<Long> path, Integer size) {
 		long startTime = System.currentTimeMillis();
+		fetched = new HashMap<>();
 		for (Long l : path) {
 			fetched.put(l, FileHandler.getListOfPathCosts(l, size));
 		}
